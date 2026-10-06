@@ -40,7 +40,8 @@ export function FeedItem({ videoId, active, onToast, onOpenQuiz }: FeedItemProps
   const saveFlashcards = useAppStore((s) => s.saveFlashcards)
   const unsaveFlashcards = useAppStore((s) => s.unsaveFlashcards)
 
-  const saved = video.flashcardIds.every((id) => id in savedFolders)
+  const hasCards = video.flashcardIds.length > 0
+  const saved = hasCards && video.flashcardIds.every((id) => id in savedFolders)
   const unlockedCount = video.flashcardIds.filter((id) => unlockedIds.includes(id)).length
   const locked = unlockedCount === 0
 
@@ -81,12 +82,20 @@ export function FeedItem({ videoId, active, onToast, onOpenQuiz }: FeedItemProps
   }
 
   const handleSave = () => {
+    if (!hasCards) {
+      onToast('Video này chưa có thẻ ghi nhớ để lưu')
+      return
+    }
     if (saved) {
       unsaveFlashcards(video.flashcardIds)
       onToast('Removed from Saved')
     } else {
       saveFlashcards(video.flashcardIds)
-      onToast('Saved to Unsorted')
+      onToast(
+        locked
+          ? 'Đã lưu. Thẻ sẽ hiện trong tab Đã lưu sau khi bạn hoàn thành quiz'
+          : 'Saved to Unsorted',
+      )
     }
   }
 
@@ -157,7 +166,7 @@ export function FeedItem({ videoId, active, onToast, onOpenQuiz }: FeedItemProps
         />
       </div>
 
-      <div className="absolute inset-x-5 bottom-14 flex flex-col items-start gap-2.5 pr-[76px]">
+      <div className="pointer-events-none absolute inset-x-5 bottom-14 flex flex-col items-start gap-2.5 pr-[76px]">
         <div className="flex w-full items-center gap-2">
           <span
             aria-hidden
@@ -172,6 +181,7 @@ export function FeedItem({ videoId, active, onToast, onOpenQuiz }: FeedItemProps
           tone={following ? 'cream' : 'yellow'}
           size="sm"
           aria-pressed={following}
+          className="pointer-events-auto"
           onClick={() => toggleFollow(lecturer.id)}
         >
           {following ? 'Following' : 'Follow'}

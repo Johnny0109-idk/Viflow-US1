@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { FeedItem } from '@/components/feed/feed-item'
 import { FlashcardUnlocked } from '@/components/quiz/flashcard-unlocked'
 import { QuizSheet } from '@/components/quiz/quiz-sheet'
-import { getFeedIds, useFeedIds } from '@/lib/content'
+import { getFeedIds, getQuizzesForVideo, useFeedIds } from '@/lib/content'
 import { useAppStore } from '@/lib/store'
 
 export function Feed({ initialVideoId }: { initialVideoId?: string }) {
@@ -29,6 +29,10 @@ function FeedInner({ initialVideoId }: { initialVideoId?: string }) {
 
   const openQuiz = useCallback(
     (videoId: string) => {
+      if (getQuizzesForVideo(videoId).length === 0) {
+        setToast('Video này chưa có câu hỏi quiz')
+        return
+      }
       useAppStore.getState().completeDemoStep(1)
       setQuiz((q) => ({ videoId, run: (q?.run ?? 0) + 1 }))
     },
